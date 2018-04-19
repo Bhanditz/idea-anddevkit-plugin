@@ -28,10 +28,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Android res Xml string 值重复性静态检查 Provider
  */
-public class AndroidStringXmlValueInspectionProvider implements InspectionToolProvider {
+public class ConfigInspectionProvider implements InspectionToolProvider {
     @NotNull
     @Override
     public Class[] getInspectionClasses() {
-        return new Class[]{AndroidStringXmlValueInspection.class};
+        return new Class[]{
+                            AndroidStringXmlValueInspection.class,
+                            JavaInnerClassOutFieldInspection.class
+                        };
     }
 }

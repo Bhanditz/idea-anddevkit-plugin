@@ -46,11 +46,11 @@ import java.util.Map;
 public class AndroidDevKitSetting implements PersistentStateComponent<AndroidDevKitSetting.Config> {
     public static class Config {
         public Map<String, String> workNetUrlMap;
-        public Boolean autoCheckResValues;
+        public Boolean autoCheckInspectionValues;
 
         public Config() {
             this.workNetUrlMap = new HashMap<>();
-            this.autoCheckResValues = false;
+            this.autoCheckInspectionValues = false;
         }
     }
 
