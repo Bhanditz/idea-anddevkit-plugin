@@ -33,15 +33,15 @@ import com.intellij.util.Query;
 import com.siyeh.ig.BaseInspection;
 import com.siyeh.ig.BaseInspectionVisitor;
 import com.siyeh.ig.InspectionGadgetsFix;
-import com.siyeh.ig.psiutils.ClassUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Java 内部类引用外部类等 access$X() 方法静态检查纠正
+ * 可纠正 Field 和 Method
  */
-public class JavaInnerClassOutFieldInspection extends BaseInspection implements CleanupLocalInspectionTool {
-    public static final String NAME = "JavaInnerClassOutFieldInspection";
+public class JavaInnerClassOutClassInspection extends BaseInspection implements CleanupLocalInspectionTool {
+    public static final String NAME = "JavaInnerClassOutClassInspection";
 
     @Nls
     @NotNull
@@ -70,12 +70,28 @@ public class JavaInnerClassOutFieldInspection extends BaseInspection implements 
     @NotNull
     @Override
     protected String buildErrorString(Object... objects) {
-        return "Field <code>#ref</code> 建议设置成 'protected' 来减少方法数.#loc";
+        String errorMsg = "";
+        if (objects[0] instanceof PsiField) {
+            errorMsg = "Field <code>#ref</code> 建议设置成 'protected' 来减少方法数.#loc";
+        } else if (objects[0] instanceof PsiMethod) {
+            errorMsg = "Method <code>#ref</code> 建议设置成 'protected' 来减少方法数.#loc";
+        }
+        return errorMsg;
     }
 
     @Override
     public InspectionGadgetsFix buildFix(Object... infos) {
-        return MakeFieldProtectedFix.buildFixUnconditional((PsiField) infos[0]);
+        InspectionGadgetsFix inspectionGadgetsFix = null;
+        if (infos[0] instanceof PsiField) {
+            inspectionGadgetsFix = MakeFieldProtectedFix.buildFixUnconditional((PsiField) infos[0]);
+        } else if (infos[0] instanceof PsiMethod) {
+            inspectionGadgetsFix = MakeMethodProtectedFix.buildFixUnconditional((PsiMethod) infos[0]);
+        }
+
+        if (inspectionGadgetsFix != null) {
+            return inspectionGadgetsFix;
+        }
+        return super.buildFix(infos);
     }
 
     @Override
@@ -142,11 +158,69 @@ public class JavaInnerClassOutFieldInspection extends BaseInspection implements 
         }
     }
 
+    static class MakeMethodProtectedFix extends InspectionGadgetsFix {
+
+        private final String methodName;
+
+        private MakeMethodProtectedFix(String methodName) {
+            this.methodName = methodName;
+        }
+
+        @NotNull
+        public static InspectionGadgetsFix buildFixUnconditional(PsiMethod method) {
+            return new MakeMethodProtectedFix(method.getName());
+        }
+
+        @Override
+        @NotNull
+        public String getName() {
+            return "Make '" + methodName + "' 'protected'";
+        }
+
+        @NotNull
+        @Override
+        public String getFamilyName() {
+            return "Make protected";
+        }
+
+        @Override
+        protected void doFix(Project project, ProblemDescriptor descriptor) {
+            final PsiElement element = descriptor.getPsiElement();
+            final PsiMethod method;
+            if (element instanceof PsiReferenceExpression) {
+                final PsiReferenceExpression referenceExpression =
+                        (PsiReferenceExpression)element;
+                final PsiElement target = referenceExpression.resolve();
+                if (!(target instanceof PsiMethod)) {
+                    return;
+                }
+                method = (PsiMethod) target;
+            }
+            else {
+                final PsiElement parent = element.getParent();
+                if (!(parent instanceof PsiMethod)) {
+                    return;
+                }
+                method = (PsiMethod) parent;
+            }
+            final PsiModifierList modifierList = method.getModifierList();
+            if (modifierList == null) {
+                return;
+            }
+            modifierList.setModifierProperty(PsiModifier.PROTECTED, true);
+        }
+    }
+
     private static class InnerClassOutFieldVisitor extends BaseInspectionVisitor {
         @Override
         public void visitClass(PsiClass aClass) {
             super.visitClass(aClass);
 //            boolean isInnerClass = ClassUtils.isInnerClass(aClass);
+            handleField(aClass);
+            handleMethod(aClass);
+        }
+
+        private void handleField(PsiClass aClass) {
             for (PsiField psiField : aClass.getAllFields()) {
                 if (psiField != null && !psiField.hasModifierProperty(PsiModifier.PRIVATE)) {
                     continue;
@@ -170,6 +244,39 @@ public class JavaInnerClassOutFieldInspection extends BaseInspection implements 
                                 int start = refExpersion.indexOf(fieldName);
                                 int end = start + fieldName.length();
                                 registerErrorAtOffset(psiReference.getElement(), start, end, psiField);
+                            }
+                            break;
+                        }
+                        referenceElementParent = referenceElementParent.getParent();
+                    }
+                }
+            }
+        }
+
+        private void handleMethod(PsiClass aClass) {
+            for (PsiMethod psiMethod : aClass.getAllMethods()) {
+                if (psiMethod != null && !psiMethod.hasModifierProperty(PsiModifier.PRIVATE)) {
+                    continue;
+                }
+
+                Query<PsiReference> references = ReferencesSearch.search(psiMethod, aClass.getUseScope());
+                for (PsiReference psiReference: references) {
+                    if (psiReference == null) {
+                        continue;
+                    }
+
+                    PsiElement referenceElement = psiReference.getElement();
+                    PsiElement referenceElementParent = referenceElement.getParent();
+                    while (referenceElementParent != null) {
+                        if (referenceElementParent instanceof PsiClass) {
+                            String refClassName = ((PsiClass) referenceElementParent).getName();
+                            if (!aClass.getName().equals(refClassName)) {
+                                PsiElement refElement = psiReference.getElement();
+                                String methodName = psiMethod.getName();
+                                String refExpersion = refElement.getText();
+                                int start = refExpersion.indexOf(methodName);
+                                int end = start + methodName.length();
+                                registerErrorAtOffset(psiReference.getElement(), start, end, psiMethod);
                             }
                             break;
                         }

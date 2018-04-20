@@ -25,7 +25,7 @@ package cn.yan.anddevkit.action;
 
 import cn.yan.anddevkit.config.AndroidDevKitSetting;
 import cn.yan.anddevkit.inspection.AndroidStringXmlValueInspection;
-import cn.yan.anddevkit.inspection.JavaInnerClassOutFieldInspection;
+import cn.yan.anddevkit.inspection.JavaInnerClassOutClassInspection;
 import com.intellij.codeInspection.ex.InspectionProfileImpl;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -57,9 +57,9 @@ public class ToggleConfigInspectionAction extends AnAction {
 
         List<String> items = new ArrayList<>();
         items.add(AndroidStringXmlValueInspection.NAME);
-        items.add(JavaInnerClassOutFieldInspection.NAME);
+        items.add(JavaInnerClassOutClassInspection.NAME);
         profile.removeScopes(items, AndroidStringXmlValueInspection.NAME, project);
-        profile.removeScopes(items, JavaInnerClassOutFieldInspection.NAME, project);
+        profile.removeScopes(items, JavaInnerClassOutClassInspection.NAME, project);
         if (config.autoCheckInspectionValues) {
             profile.enableToolsByDefault(items, project);
         } else {

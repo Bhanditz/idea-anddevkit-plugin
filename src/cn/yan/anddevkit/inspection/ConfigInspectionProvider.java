@@ -34,7 +34,7 @@ public class ConfigInspectionProvider implements InspectionToolProvider {
     public Class[] getInspectionClasses() {
         return new Class[]{
                             AndroidStringXmlValueInspection.class,
-                            JavaInnerClassOutFieldInspection.class
+                            JavaInnerClassOutClassInspection.class
                         };
     }
 }

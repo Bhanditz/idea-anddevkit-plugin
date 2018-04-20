@@ -9,7 +9,8 @@
       <ul>
         <li>支持对送翻多语言进行一键同步操作；</li>
         <li>支持对 Android res 下 string 的重复值静态检测及建议通过 @string/[duplicate] 替换；</li>
-        <li>支持对各种内部类直接访问外部类 private 属性建议修改为 protected 属性来减少一个 access$0 方法数；</li>
+        <li>支持对各种内部类直接访问外部类 private 属性建议修改为 protected 属性来减少一个 access$0 包装方法数；</li>
+        <li>支持对各种内部类直接访问外部类 private 方法建议修改为 protected 方法来减少一个 access$0 包装方法数；</li>
         <li>支持配置常用网站便捷访问；</li>
       </ul>
       默认快捷键(可在 Setting 中修改)<br>
@@ -23,7 +24,8 @@
   <change-notes><![CDATA[
       <ul>
         <li>修改一批内测已知问题～</li>
-        <li>添加内部类访问外部类私有属性权限修饰符建议～～</li>
+        <li>添加内部类访问外部类私有属性权限修饰符建议～</li>
+        <li>添加内部类访问外部类私有方法权限修饰符建议～</li>
         <li>多多反馈意见与痛点，谢谢～</li>
       </ul>
     ]]>
