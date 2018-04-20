@@ -216,13 +216,18 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
         public void visitClass(PsiClass aClass) {
             super.visitClass(aClass);
 //            boolean isInnerClass = ClassUtils.isInnerClass(aClass);
-            handleField(aClass);
-            handleMethod(aClass);
+            try {
+                handleField(aClass);
+                handleMethod(aClass);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         private void handleField(PsiClass aClass) {
-            for (PsiField psiField : aClass.getAllFields()) {
-                if (psiField != null && !psiField.hasModifierProperty(PsiModifier.PRIVATE)) {
+            for (PsiField psiField : aClass.getFields()) {
+                if (psiField != null && (!psiField.hasModifierProperty(PsiModifier.PRIVATE) ||
+                        (psiField.hasModifierProperty(PsiModifier.FINAL) && psiField.hasModifierProperty(PsiModifier.STATIC)))) {
                     continue;
                 }
 
@@ -254,7 +259,7 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
         }
 
         private void handleMethod(PsiClass aClass) {
-            for (PsiMethod psiMethod : aClass.getAllMethods()) {
+            for (PsiMethod psiMethod : aClass.getMethods()) {
                 if (psiMethod != null && !psiMethod.hasModifierProperty(PsiModifier.PRIVATE)) {
                     continue;
                 }
