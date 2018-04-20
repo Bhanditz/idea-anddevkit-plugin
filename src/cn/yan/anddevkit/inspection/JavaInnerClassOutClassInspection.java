@@ -24,13 +24,11 @@
 package cn.yan.anddevkit.inspection;
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel;
-import com.intellij.codeInspection.CleanupLocalInspectionTool;
-import com.intellij.codeInspection.ProblemDescriptor;
+import com.intellij.codeInspection.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.*;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.util.Query;
-import com.siyeh.ig.BaseInspection;
 import com.siyeh.ig.BaseInspectionVisitor;
 import com.siyeh.ig.InspectionGadgetsFix;
 import org.jetbrains.annotations.Nls;
@@ -39,8 +37,9 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Java 内部类引用外部类等 access$X() 方法静态检查纠正
  * 可纠正 Field 和 Method
+ * link BaseInspection & FieldMayBeFinalInspection
  */
-public class JavaInnerClassOutClassInspection extends BaseInspection implements CleanupLocalInspectionTool {
+public class JavaInnerClassOutClassInspection extends AbstractBaseJavaLocalInspectionTool implements CleanupLocalInspectionTool {
     public static final String NAME = "JavaInnerClassOutClassInspection";
 
     @Nls
@@ -56,6 +55,13 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
         return getDisplayName();
     }
 
+    @Nls
+    @NotNull
+    @Override
+    public String getGroupDisplayName() {
+        return getDisplayName();
+    }
+
     @Override
     public boolean isEnabledByDefault() {
         return true;
@@ -67,41 +73,15 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
         return HighlightDisplayLevel.ERROR;
     }
 
-    @NotNull
-    @Override
-    protected String buildErrorString(Object... objects) {
-        String errorMsg = "";
-        if (objects[0] instanceof PsiField) {
-            errorMsg = "Field <code>#ref</code> 建议设置成 'protected' 来减少方法数.#loc";
-        } else if (objects[0] instanceof PsiMethod) {
-            errorMsg = "Method <code>#ref</code> 建议设置成 'protected' 来减少方法数.#loc";
-        }
-        return errorMsg;
-    }
-
-    @Override
-    public InspectionGadgetsFix buildFix(Object... infos) {
-        InspectionGadgetsFix inspectionGadgetsFix = null;
-        if (infos[0] instanceof PsiField) {
-            inspectionGadgetsFix = MakeFieldProtectedFix.buildFixUnconditional((PsiField) infos[0]);
-        } else if (infos[0] instanceof PsiMethod) {
-            inspectionGadgetsFix = MakeMethodProtectedFix.buildFixUnconditional((PsiMethod) infos[0]);
-        }
-
-        if (inspectionGadgetsFix != null) {
-            return inspectionGadgetsFix;
-        }
-        return super.buildFix(infos);
-    }
-
     @Override
     public boolean runForWholeFile() {
         return true;
     }
 
+    @NotNull
     @Override
-    public BaseInspectionVisitor buildVisitor() {
-        return new InnerClassOutFieldVisitor();
+    public PsiElementVisitor buildVisitor(@NotNull ProblemsHolder holder, boolean isOnTheFly) {
+        return new InnerClassOutFieldVisitor(holder);
     }
 
     static class MakeFieldProtectedFix extends InspectionGadgetsFix {
@@ -110,11 +90,6 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
 
         private MakeFieldProtectedFix(String fieldName) {
             this.fieldName = fieldName;
-        }
-
-        @NotNull
-        public static InspectionGadgetsFix buildFixUnconditional(PsiField field) {
-            return new MakeFieldProtectedFix(field.getName());
         }
 
         @Override
@@ -166,11 +141,6 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
             this.methodName = methodName;
         }
 
-        @NotNull
-        public static InspectionGadgetsFix buildFixUnconditional(PsiMethod method) {
-            return new MakeMethodProtectedFix(method.getName());
-        }
-
         @Override
         @NotNull
         public String getName() {
@@ -212,19 +182,20 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
     }
 
     private static class InnerClassOutFieldVisitor extends BaseInspectionVisitor {
+        private ProblemsHolder holder;
+
+        public InnerClassOutFieldVisitor(ProblemsHolder holder) {
+            this.holder = holder;
+        }
+
         @Override
         public void visitClass(PsiClass aClass) {
             super.visitClass(aClass);
-//            boolean isInnerClass = ClassUtils.isInnerClass(aClass);
-            try {
-                handleField(aClass);
-                handleMethod(aClass);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            handleField(holder, aClass);
+            handleMethod(holder, aClass);
         }
 
-        private void handleField(PsiClass aClass) {
+        private void handleField(ProblemsHolder holder, PsiClass aClass) {
             for (PsiField psiField : aClass.getFields()) {
                 if (psiField != null && (!psiField.hasModifierProperty(PsiModifier.PRIVATE) ||
                         (psiField.hasModifierProperty(PsiModifier.FINAL) && psiField.hasModifierProperty(PsiModifier.STATIC)))) {
@@ -243,12 +214,8 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
                         if (referenceElementParent instanceof PsiClass) {
                             String refClassName = ((PsiClass) referenceElementParent).getName();
                             if (!aClass.getName().equals(refClassName)) {
-                                PsiElement refElement = psiReference.getElement();
-                                String fieldName = psiField.getName();
-                                String refExpersion = refElement.getText();
-                                int start = refExpersion.indexOf(fieldName);
-                                int end = start + fieldName.length();
-                                registerErrorAtOffset(psiReference.getElement(), start, end, psiField);
+                                holder.registerProblem(InspectionManager.getInstance(aClass.getProject()).createProblemDescriptor(psiReference.getElement(),
+                                        "Field <code>"+psiField.getName()+"</code> 建议设置成 'protected' 来减少方法数.", new MakeFieldProtectedFix(psiField.getName()), ProblemHighlightType.GENERIC_ERROR));
                             }
                             break;
                         }
@@ -258,7 +225,7 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
             }
         }
 
-        private void handleMethod(PsiClass aClass) {
+        private void handleMethod(ProblemsHolder holder, PsiClass aClass) {
             for (PsiMethod psiMethod : aClass.getMethods()) {
                 if (psiMethod != null && !psiMethod.hasModifierProperty(PsiModifier.PRIVATE)) {
                     continue;
@@ -276,12 +243,8 @@ public class JavaInnerClassOutClassInspection extends BaseInspection implements 
                         if (referenceElementParent instanceof PsiClass) {
                             String refClassName = ((PsiClass) referenceElementParent).getName();
                             if (!aClass.getName().equals(refClassName)) {
-                                PsiElement refElement = psiReference.getElement();
-                                String methodName = psiMethod.getName();
-                                String refExpersion = refElement.getText();
-                                int start = refExpersion.indexOf(methodName);
-                                int end = start + methodName.length();
-                                registerErrorAtOffset(psiReference.getElement(), start, end, psiMethod);
+                                holder.registerProblem(InspectionManager.getInstance(aClass.getProject()).createProblemDescriptor(psiReference.getElement(),
+                                        "Field <code>"+psiMethod.getName()+"</code> 建议设置成 'protected' 来减少方法数.", new MakeMethodProtectedFix(psiMethod.getName()), ProblemHighlightType.GENERIC_ERROR));
                             }
                             break;
                         }
