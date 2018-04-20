@@ -24,6 +24,10 @@
 
 <div><img src=".images/res-i18n-pre-trans-format.gif"></div>
 
+对各种内部类直接访问外部类 private 属性和方法建议修改为 protected 来减少一个 access$0 包装方法数的操作。
+
+<div><img src=".images/innerclass-use.gif"></div>
+
 项目相关常用网站 Android Studio 应用内快捷访问，提升开发效率。
 
 <div><img src=".images/fast-net-work.gif"></div>
