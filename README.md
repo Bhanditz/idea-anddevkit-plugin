@@ -1,4 +1,4 @@
-# Android 国际化多语言开发助手(Android DevKit)
+# Android 开发助手(Android DevKit)
 
 ## 功能
 
