@@ -21,23 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package cn.yan.anddevkit.action;
+package cn.yan.anddevkit.inspection
 
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.project.Project;
+import com.intellij.codeInspection.InspectionToolProvider
+import com.intellij.codeInspection.LocalInspectionTool
 
 /**
- * 工具箱组 Action
+ * Android res Xml string 值重复性静态检查 Provider
  */
-public class AndroidDevKitActionGroup extends DefaultActionGroup {
-    @Override
-    public void update(AnActionEvent event) {
-        super.update(event);
-        final Project project = event.getProject();
-        final Editor editor = event.getData(CommonDataKeys.EDITOR);
-        event.getPresentation().setEnabledAndVisible((project != null && editor != null));
+class ConfigInspectionProvider : InspectionToolProvider {
+    override fun getInspectionClasses(): Array<Class<out LocalInspectionTool>> {
+        return arrayOf(
+                AndroidStringXmlValueInspection::class.java,
+                JavaInnerClassOutClassInspection::class.java
+        )
     }
+
 }

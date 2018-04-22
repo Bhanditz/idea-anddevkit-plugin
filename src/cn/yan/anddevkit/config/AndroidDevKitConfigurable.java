@@ -50,7 +50,9 @@ public class AndroidDevKitConfigurable implements SearchableConfigurable {
     private JButton btnWorkAddrAdd;
     private JButton btnWorkAddrDel;
 
-    private AndroidDevKitSetting setting = AndroidDevKitSetting.getInstance();
+    private boolean changed = false;
+
+    private AndroidDevKitSetting setting = AndroidDevKitSetting.Companion.getInstance();
 
     @NotNull
     @Override
@@ -68,7 +70,7 @@ public class AndroidDevKitConfigurable implements SearchableConfigurable {
     @Override
     public JComponent createComponent() {
         AndroidDevKitSetting.Config config = setting.getConfig();
-        Map<String, String> configMap = config.workNetUrlMap;
+        Map<String, String> configMap = config.getWorkNetUrlMap();
 
         DefaultListModel dlm = new DefaultListModel();
         refreshList(dlm, configMap);
@@ -76,6 +78,8 @@ public class AndroidDevKitConfigurable implements SearchableConfigurable {
         btnWorkAddrAdd.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                changed = true;
+
                 String name = inputWorkAddrName.getText();
                 String url = inputWorkAddrUrl.getText();
                 if (name == null || name.length() == 0) {
@@ -96,6 +100,8 @@ public class AndroidDevKitConfigurable implements SearchableConfigurable {
         btnWorkAddrDel.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
+                changed = true;
+
                 List<String> selects = listWorkAddr.getSelectedValuesList();
                 if (selects != null && selects.size() > 0) {
                     for (String key : selects) {
@@ -121,7 +127,7 @@ public class AndroidDevKitConfigurable implements SearchableConfigurable {
 
     @Override
     public boolean isModified() {
-        return true;
+        return changed;
     }
 
 

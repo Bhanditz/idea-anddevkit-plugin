@@ -21,17 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package cn.yan.anddevkit.common;
+package cn.yan.anddevkit.action
+
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
 
 /**
- * 消息常量
+ * 工具箱组 Action
  */
-public final class Message {
-    public static final String I18N_SYNC_CONFIRM = "确定要将 %s 语言文件\n同步到 %s 的其他 %d 个国家吗？\n注意：被同步的资源文件<string>标签必须只能以行为单位，不允许换行！";
-    public static final String I18N_SYNC_OK_CONFIRM = "恭喜你送翻前多语言同步接锅成功！";
-    public static final String I18N_SYNC_ING_TIPS_TITLE = "%s 中 %s 模块多语言同步";
-
-    public static final String NOTE_LIST_TITLE = "我的常用工作网址";
-    public static final String NOTE_NOTICE_TITLE = "Android DevKit 常用工作网站不可用";
-    public static final String NOTE_NOTICE_CONTENT = "当前无可用配置项！\n请先在设置中配置后再使用！";
+class AndroidDevKitActionGroup: DefaultActionGroup() {
+    override fun update(event: AnActionEvent?) {
+        super.update(event)
+        val project: Project? = event?.project
+        val editor: Editor? = event?.getData(CommonDataKeys.EDITOR)
+        event?.presentation?.isEnabledAndVisible ?: (project != null && editor != null)
+    }
 }

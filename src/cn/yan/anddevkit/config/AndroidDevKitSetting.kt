@@ -21,20 +21,43 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package cn.yan.anddevkit.inspection;
+package cn.yan.anddevkit.config
 
-import com.intellij.codeInspection.InspectionToolProvider;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.ServiceManager
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.StoragePathMacros.APP_CONFIG
+
 /**
- * Android res Xml string 值重复性静态检查 Provider
+ * 插件持久化数据处理
  */
-public class ConfigInspectionProvider implements InspectionToolProvider {
-    @NotNull
-    @Override
-    public Class[] getInspectionClasses() {
-        return new Class[]{
-                            AndroidStringXmlValueInspection.class,
-                            JavaInnerClassOutClassInspection.class
-                        };
+
+@State(
+        name = "AndroidDevKitSetting",
+        storages = [Storage(
+                id = "other",
+                file = "$APP_CONFIG$/AndroidDevKitSetting.xml"
+        )]
+)
+
+class AndroidDevKitSetting: PersistentStateComponent<AndroidDevKitSetting.Config> {
+    data class Config(var workNetUrlMap: MutableMap<String, String> = mutableMapOf(),
+                      var autoCheckInspectionValues: Boolean = false)
+
+    var config: Config = Config()
+
+    override fun getState(): Config? {
+        return config
+    }
+
+    override fun loadState(config: Config) {
+        this.config = config
+    }
+
+    companion object {
+        fun getInstance(): AndroidDevKitSetting {
+            return ServiceManager.getService(AndroidDevKitSetting::class.java)
+        }
     }
 }
