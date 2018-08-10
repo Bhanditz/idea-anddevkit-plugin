@@ -21,21 +21,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package cn.yan.anddevkit.inspection
+package cn.yan.anddevkit.service.impl;
 
-import com.intellij.codeInspection.InspectionToolProvider
-import com.intellij.codeInspection.LocalInspectionTool
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Android res Xml string 值重复性静态检查 Provider
+ * 解析工程多 module 的主子 gradle 文件
+ * 使用正则表达式
+ * @Deprecated
  */
-class ConfigInspectionProvider : InspectionToolProvider {
-    override fun getInspectionClasses(): Array<Class<out LocalInspectionTool>> {
-        return arrayOf(
-                AndroidStringXmlValueInspection::class.java,
-//                MutilModuleImportInspection::class.java,
-                JavaInnerClassOutClassInspection::class.java
-        )
-    }
+public class MutilModuleImportParaser {
+    public static final String TARGET_MODULE_NAME = "app";
+    public static final String TARGET_FILE = "build.gradle";
+    public static final String FILE_SEPARATOR = "/";    //FUCK File.separator
 
+    private Map<String, List<String>> parsedRuleMap = new HashMap<String, List<String>>();
+
+
+    public Map<String, List<String>> s2m(File path) throws Exception {
+        parsedRuleMap.clear();
+        //TODO parse script file...
+        return parsedRuleMap;
+    }
 }

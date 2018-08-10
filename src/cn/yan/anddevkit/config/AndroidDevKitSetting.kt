@@ -46,6 +46,12 @@ class AndroidDevKitSetting: PersistentStateComponent<AndroidDevKitSetting.Config
                       var autoCheckInspectionValues: Boolean = false)
 
     var config: Config = Config()
+        get() {
+            if (field == null) {
+                return Config()
+            }
+            return field
+        }
 
     override fun getState(): Config? {
         return config

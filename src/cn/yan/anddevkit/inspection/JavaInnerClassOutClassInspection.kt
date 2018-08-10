@@ -199,7 +199,7 @@ class JavaInnerClassOutClassInspection: AbstractBaseJavaLocalInspectionTool(), C
                             val refClassName: String? = referenceElementParent.name
                             if (!aClass.name.equals(refClassName)) {
                                 holder.registerProblem(InspectionManager.getInstance(aClass.project).createProblemDescriptor(psiReference.element,
-                                        "Field <code>${psiMethod.name}</code> 建议设置成 'protected' 来减少方法数.", MakeMethodProtectedFix(psiMethod.name), ProblemHighlightType.GENERIC_ERROR))
+                                        "Method <code>${psiMethod.name}</code> 建议设置成 'protected' 来减少方法数.", MakeMethodProtectedFix(psiMethod.name), ProblemHighlightType.GENERIC_ERROR))
                             }
                             break
                         }

@@ -7,6 +7,7 @@
 - 支持对各种内部类直接访问外部类 private 属性建议修改为 protected 属性来减少一个 access$0 包装方法数；
 - 支持对各种内部类直接访问外部类 private 方法建议修改为 protected 方法来减少一个 access$0 包装方法数；
 - 支持配置常用网站便捷访问；
+- 支持 Java Class Reference Element PopWindow 增强型提示(类路径)，尽可能的引用透明化，比用每次看类在哪个路径时再执行跳转操作；
 
 ## 默认快捷键(可在 Setting 中修改) 
 
@@ -32,6 +33,10 @@
 
 <div><img src=".images/fast-net-work.gif"></div>
 
+支持 Java Class Reference Element PopWindow 增强型提示(类路径)，尽可能的引用透明化，比用每次看类在哪个路径时再执行跳转操作。
+
+<div><img src=".images/class-reference-element-path.png"></div>
+
 ## 注意事项
 
 多语言源文件书写格式必须是标准 XML，一个完整的 `<string>xxxxx<string/>` 中必须不准换行，同步原理为按行同步，可以参照如下格式。
@@ -41,9 +46,8 @@
     <string name="app_name">My Application</string>
     <string name="app_name1">@string/app_name</string>
     
-    <!-- xxxxxx -->
+    <!-- array 必须放在单独的 arrays.xml 等文件中，而且必须引用要国际化的文件，不允许直接给 item 写字符串值 -->
     <array name="test">
-        <item>xxix</item>
         <item>@string/app_name</item>
     </array>
 </resources>

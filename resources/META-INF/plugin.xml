@@ -1,7 +1,7 @@
 <idea-plugin>
   <id>cn.yan.android.devkit</id>
   <name>Android DevKit</name>
-  <version>3.0</version>
+  <version>5.0</version>
   <vendor email="yanbobersky@gmail.com">工匠若水</vendor>
 
   <description><![CDATA[
@@ -12,6 +12,7 @@
         <li>支持对各种内部类直接访问外部类 private 属性建议修改为 protected 属性来减少一个 access$0 包装方法数；</li>
         <li>支持对各种内部类直接访问外部类 private 方法建议修改为 protected 方法来减少一个 access$0 包装方法数；</li>
         <li>支持配置常用网站便捷访问；</li>
+        <li>支持 Java Class Reference Element PopWindow 增强型提示(类路径)；</li>
       </ul>
       默认快捷键(可在 Setting 中修改)<br>
       <ul>
@@ -23,10 +24,7 @@
 
   <change-notes><![CDATA[
       <ul>
-        <li>修改一批内测已知问题～</li>
-        <li>添加内部类访问外部类私有属性权限修饰符建议～</li>
-        <li>添加内部类访问外部类私有方法权限修饰符建议～</li>
-        <li>项目翻译成 Kotlin 编写～</li>
+        新增 Java Class Reference Element PopWindow 增强型提示(类路径)，尽可能的在写代码引入包时做到心中有数，属于哪个模块目录的类，减少同包名引用错误。
       </ul>
     ]]>
   </change-notes>
@@ -34,6 +32,9 @@
   <idea-version since-build="145.0"/>
 
   <extensions defaultExtensionNs="com.intellij">
+    <!-- https://gitter.im/IntelliJ-Plugin-Developers/Lobby -->
+    <completion.contributor order="first" language="JAVA" implementationClass="cn.yan.anddevkit.contributor.PathInfoCompletionContributor"/>
+
     <inspectionToolProvider implementation="cn.yan.anddevkit.inspection.ConfigInspectionProvider"
                             id="AndroidStringXmlValueInspectionProvider.ID"/>
 
@@ -41,7 +42,15 @@
 
     <applicationService serviceInterface="cn.yan.anddevkit.config.AndroidDevKitSetting"
                         serviceImplementation="cn.yan.anddevkit.config.AndroidDevKitSetting"/>
+      <!--<applicationService serviceInterface="cn.yan.anddevkit.service.MutilModuleImportParse"
+                          serviceImplementation="cn.yan.anddevkit.service.impl.MutilModuleImportParseImpl"/>-->
   </extensions>
+
+  <!--<project-components>
+    <component>
+      <implementation-class>cn.yan.anddevkit.service.MutilModuleImportParseProjectect</implementation-class>
+    </component>
+  </project-components>-->
 
   <actions>
     <group class="cn.yan.anddevkit.action.AndroidDevKitActionGroup" id="AndroidDevKitActionGroup.ID" text="Android开发助手"

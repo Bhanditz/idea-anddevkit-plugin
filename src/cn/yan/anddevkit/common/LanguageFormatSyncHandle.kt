@@ -71,7 +71,7 @@ class LanguageFormatSyncHandle {
 
         try {
             mTargetToFiles.forEach {
-                sleepForUi(50)
+                sleepForUi(25)
 
                 val targetToFile: File = it
                 val tmpTargetToFile = File(targetToFile.parent + File.separator + TMP_FILE)
@@ -96,7 +96,7 @@ class LanguageFormatSyncHandle {
         var targetToLine: String? = targetToReader.readLine()
         while (targetToLine != null) {
             val targetToTrimLine: String = targetToLine.trim()
-            if (targetToTrimLine.startsWith("<string")) {
+            if (targetToTrimLine.startsWith("<string") && !targetToTrimLine.startsWith("<string-array")) {
                 existLines.put(targetToTrimLine.split("\"")[1], targetToTrimLine)
             }
 

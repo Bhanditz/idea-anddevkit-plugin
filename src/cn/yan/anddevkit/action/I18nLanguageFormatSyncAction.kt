@@ -23,10 +23,7 @@
  */
 package cn.yan.anddevkit.action
 
-import cn.yan.anddevkit.common.LanguageFormatSyncHandle
-import cn.yan.anddevkit.common.Message
-import cn.yan.anddevkit.common.findResDirLanguageFiles
-import cn.yan.anddevkit.common.isXmlResourceFile
+import cn.yan.anddevkit.common.*
 import com.intellij.CommonBundle
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -56,10 +53,20 @@ class I18nLanguageFormatSyncAction: AnAction() {
         val project: Project = event?.project ?: return
         val psiFile: PsiFile = event?.getData(CommonDataKeys.PSI_FILE) ?: return
 
+        val targetLanguageFiles: List<PsiFile> = findResDirLanguageFiles(psiFile)
+
+        val state = isValidResFormatFile(psiFile2LocalFile(psiFile))
+        if (state == Result.VALID) {
+            startSync(project, psiFile, targetLanguageFiles)
+        } else {
+            Messages.showErrorDialog(String.format(Message.I18N_SYNC_ERROR_CONTENT, psiFile.name, state.toString()), Message.I18N_SYNC_ERROR_TITLE)
+        }
+    }
+
+    private fun startSync(project: Project, psiFile: PsiFile, targetLanguageFiles: List<PsiFile>) {
         val module: Module = ModuleUtilCore.findModuleForFile(psiFile.virtualFile, project) ?: return
 
         val sourcePath: String = psiFile.virtualFile.path
-        val targetLanguageFiles: List<PsiFile> = findResDirLanguageFiles(psiFile)
 
         val result: Int = Messages.showOkCancelDialog(
                 String.format(Message.I18N_SYNC_CONFIRM, sourcePath, module.name, targetLanguageFiles.size),
@@ -69,39 +76,41 @@ class I18nLanguageFormatSyncAction: AnAction() {
         }
 
         ProgressManager.getInstance().runProcessWithProgressSynchronously(
-            {
-                val indicator: ProgressIndicator = ProgressManager.getInstance().progressIndicator
-                indicator.fraction = 0.5
-                indicator.isIndeterminate = true
+                {
+                    val indicator: ProgressIndicator = ProgressManager.getInstance().progressIndicator
+                    indicator.fraction = 0.5
+                    indicator.isIndeterminate = true
 
-                val handle = LanguageFormatSyncHandle(psiFile, targetLanguageFiles)
-                handle.setHandleStateListener(object: LanguageFormatSyncHandle.HandleStateListener {
-                    override fun onStart(msg: String) {
-                        indicator.text = "start"
-                        indicator.text2 = msg
-                    }
+                    val handle = LanguageFormatSyncHandle(psiFile, targetLanguageFiles)
+                    handle.setHandleStateListener(object: LanguageFormatSyncHandle.HandleStateListener {
+                        override fun onStart(msg: String) {
+                            indicator.text = "start"
+                            indicator.text2 = msg
+                        }
 
-                    override fun onProcess(msg: String) {
-                        indicator.text = "process"
-                        indicator.text2 = msg
-                    }
+                        override fun onProcess(msg: String) {
+                            indicator.text = "process"
+                            indicator.text2 = msg
+                        }
 
-                    override fun onErrored(msg: String) {
-                        indicator.text = "error"
-                        indicator.text2 = msg
-                        showTipsDialogInvokeLater(msg)
-                    }
+                        override fun onErrored(msg: String) {
+                            indicator.text = "error"
+                            indicator.text2 = msg
+                            if (msg != null) {
+                                showTipsDialogInvokeLater(msg)
+                            }
+                        }
 
-                    override fun onSuccess(msg: String) {
-                        indicator.text = "success"
-                        indicator.text2 = msg
+                        override fun onSuccess(msg: String) {
+                            indicator.text = "success"
+                            indicator.text2 = msg
 //                        FileDocumentManager.getInstance().saveAllDocuments()
-                        showTipsDialogInvokeLater(Message.I18N_SYNC_OK_CONFIRM)
-                    }
-                })
-                handle.start()
-            },
-            String.format(Message.I18N_SYNC_ING_TIPS_TITLE, project.name, module.name), false, project)
+                            showTipsDialogInvokeLater(Message.I18N_SYNC_OK_CONFIRM)
+                        }
+                    })
+                    handle.start()
+                },
+                String.format(Message.I18N_SYNC_ING_TIPS_TITLE, project.name, module.name), false, project)
     }
 
     private fun showTipsDialogInvokeLater(msg: String) {

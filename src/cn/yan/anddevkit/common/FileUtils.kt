@@ -26,7 +26,6 @@ package cn.yan.anddevkit.common
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
-import com.intellij.psi.xml.XmlDocument
 import java.io.File
 /**
  * 工具
@@ -40,25 +39,16 @@ fun virtualFile2LocalFile(virtualFile: VirtualFile): File {
     return File(virtualFile.path)
 }
 
-fun isXmlResourceFile(psiFile: PsiFile): Boolean {
-    var isRes = false
-    if ("xml" == psiFile.fileType.defaultExtension.toLowerCase()) {
-        val xmlDocument: XmlDocument = psiFile.firstChild as XmlDocument
-        isRes = ("resources" == xmlDocument.rootTag!!.name)
-    }
-    return isRes
-}
-
 fun findResDirLanguageFiles(targetFile: PsiFile): List<PsiFile> {
     val list: MutableList<PsiFile> = mutableListOf()
     val targetFileName = targetFile.name
     val targetFileParent: VirtualFile = targetFile.virtualFile.parent.parent
-    if (!targetFileParent.exists() || !targetFileParent.isDirectory) {
+    if (targetFileParent == null || !targetFileParent.exists() || !targetFileParent.isDirectory) {
         return list
     }
 
     val parentContentFiles: Array<VirtualFile>  = targetFileParent.children
-    if (parentContentFiles.isEmpty()) {
+    if (parentContentFiles == null || parentContentFiles.isEmpty()) {
         return list
     }
 

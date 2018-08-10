@@ -32,6 +32,13 @@ class Message {
         const val I18N_SYNC_OK_CONFIRM = "恭喜你送翻前多语言同步接锅成功！"
         const val I18N_SYNC_ING_TIPS_TITLE = "%s 中 %s 模块多语言同步"
 
+        const val I18N_SYNC_ERROR_TITLE = "源文件格式校验错误"
+        const val I18N_SYNC_ERROR_CONTENT = "您即将要同步的多语言 %s 源文件中存在错误格式，请修复后再同步！\n错误信息：\n%s ！"
+
+        const val MSG_VALID = "有效的"
+        const val MSG_CONTAINS_STRING_ARRAY = "包含不支持的 <string-array> 元素"
+        const val MSG_UNKNOW = "未知错误类型"
+
         const val NOTE_LIST_TITLE = "我的常用工作网址"
         const val NOTE_NOTICE_TITLE = "Android DevKit 常用工作网站不可用"
         const val NOTE_NOTICE_CONTENT = "当前无可用配置项！\n请先在设置中配置后再使用！"

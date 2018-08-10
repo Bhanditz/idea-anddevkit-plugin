@@ -49,16 +49,20 @@ class ToggleConfigInspectionAction: AnAction() {
         profile.apply {
             removeScope(AndroidStringXmlValueInspection.NAME, AndroidStringXmlValueInspection.NAME, project)
             removeScope(JavaInnerClassOutClassInspection.NAME, JavaInnerClassOutClassInspection.NAME, project)
+//            removeScope(MutilModuleImportInspection.NAME, MutilModuleImportInspection.NAME, project)
             if (config.autoCheckInspectionValues) {
                 enableToolsByDefault(listOf(AndroidStringXmlValueInspection.NAME), project)
                 enableToolsByDefault(listOf(JavaInnerClassOutClassInspection.NAME), project)
+//                enableToolsByDefault(listOf(MutilModuleImportInspection.NAME), project)
             } else {
                 disableToolByDefault(listOf(AndroidStringXmlValueInspection.NAME), project)
                 disableToolByDefault(listOf(JavaInnerClassOutClassInspection.NAME), project)
+//                disableToolByDefault(listOf(MutilModuleImportInspection.NAME), project)
             }
             profileChanged()
             scopesChanged()
         }
+
         config.autoCheckInspectionValues = !config.autoCheckInspectionValues
         setting.config = config
     }
